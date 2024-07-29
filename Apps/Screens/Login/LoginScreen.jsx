@@ -2,9 +2,30 @@ import { View, StyleSheet, Text, Image } from "react-native";
 import React from "react";
 import { Video, ResizeMode } from "expo-av";
 import { Colors } from "react-native/Libraries/NewAppScreen";
+import * as WebBrowser from "expo-web-browser" 
+WebBrowser.maybeCompleteAuthSession();
 import { TouchableOpacity } from "react-native";
+import { useOAuth } from "@clerk/clerk-expo";
+import { useWarmUpBrowser } from "../../hooks/useWarmUpBrowser";
 
 export default function LoginScreen() {
+  useWarmUpBrowser();
+  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google"})
+
+  const onPress=React.useCallback(async () => {
+    try {
+      const { createdSessionId, signIn, signUp, setActive }=
+        await startOAuthFlow();
+
+    if (createdSessionId) {
+      setActive({ session: createdSessionId });
+    } else {
+    // Use signIn or signup for next steps such as MFA
+    }
+  } catch (err) {
+    console.error("OAuth error", err);
+  }
+  }, []);
 
   return (
     <View style={{ flex: 1 }}>
@@ -47,7 +68,7 @@ export default function LoginScreen() {
       </View>
       <TouchableOpacity 
       style={styles.banner}
-      onPress={()=>console.log("btn pressed")}
+      onPress={onPress}
       >
             <Image
               style={styles.tinyLogo}
